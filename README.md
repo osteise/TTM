@@ -16,6 +16,13 @@ The first version focuses on player profiles and the ability to find other playe
 * **Npgsql**
 * **REST API**
 
+### Frontend
+
+* **React**
+* **TypeScript**
+* **Vite**
+
+
 ### Development
 
 * **Docker / Docker Compose** for running PostgreSQL locally
@@ -123,6 +130,28 @@ Now listening on: http://localhost:5252
 ```
 
 The API is now available locally.
+ 
+ ### 5. Start frontend
+
+To start the frontend locally, navigate to the frontend project directory:
+
+From `frontend/tabletop-match-web`, run:
+
+Install the dependencies if you have not already done so:
+
+```bash
+npm install
+```
+
+Then start the Vite development server:
+
+```bash
+npm run dev
+```
+
+The frontend will usually be available at:
+
+http://localhost:5173
 
 ## API
 
