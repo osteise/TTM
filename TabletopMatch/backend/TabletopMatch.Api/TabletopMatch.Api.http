@@ -1,6 +1,21 @@
 @TabletopMatch.Api_HostAddress = http://localhost:5252
 
-GET {{TabletopMatch.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+# GET {{TabletopMatch.Api_HostAddress}}/weatherforecast/
+# Accept: application/json
 
-###
+### CREATE PROFILE
+POST http://localhost:5252/api/profiles
+Content-Type: application/json
+
+{
+  "displayName": "Oskar",
+  "bio": "Spelar Age of Sigmar och letar efter spelare i närheten.",
+  "city": "Skövde"
+}
+
+### GET PROFILES
+GET http://localhost:5252/api/profiles
+
+### GET SPECIFIC PROFILE
+GET http://localhost:5252/api/profiles/1
+
