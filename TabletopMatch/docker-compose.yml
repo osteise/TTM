@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tabletopmatch_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tabletopmatch
+      POSTGRES_USER: tabletopmatch
+      POSTGRES_PASSWORD: tabletopmatch_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - tabletopmatch_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  tabletopmatch_postgres_data:
