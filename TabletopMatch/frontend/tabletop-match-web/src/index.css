@@ -187,6 +187,10 @@ body {
   color: var(--color-accent-hover);
 }
 
+.navigation-list li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 @media (min-width: 40rem) {
   .site-navigation {
     padding-inline: var(--space-5);
@@ -210,4 +214,179 @@ body {
   .site-navigation {
     padding-inline: var(--space-6);
   }
+}
+
+.form {
+  display: grid;
+  width: 100%;
+  max-width: 36rem;
+  padding: var(--space-5);
+  gap: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.form-field label {
+  color: var(--color-heading);
+  font-weight: 600;
+}
+
+.form-field input:not([type="checkbox"]),
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  color: var(--color-text);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-field textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.form-field input:not([type="checkbox"]):hover,
+.form-field textarea:hover,
+.form-field select:hover {
+  border-color: var(--color-text-muted);
+}
+
+.form-field input:not([type="checkbox"]):focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(217 149 50 / 20%);
+}
+
+.checkbox-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.checkbox-field input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+  accent-color: var(--color-accent-active);
+}
+
+.button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.button--primary {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.button--primary:hover:not(:disabled) {
+  border-color: var(--color-accent-hover);
+  background-color: var(--color-accent-hover);
+}
+
+.button--primary:active:not(:disabled) {
+  border-color: var(--color-accent-active);
+  background-color: var(--color-accent-active);
+  color: var(--color-surface);
+}
+
+.button:disabled {
+  opacity: 0.6;
+}
+
+.form > .button {
+  width: 100%;
+}
+
+.status-message {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.status-message--error {
+  border-color: var(--color-error-border);
+  background-color: var(--color-error-background);
+  color: var(--color-error);
+}
+
+.status-message--success {
+  border-color: var(--color-success-border);
+  background-color: var(--color-success-background);
+  color: var(--color-success);
+}
+
+@media (min-width: 40rem) {
+  .form {
+    padding: var(--space-6);
+  }
+
+  .form > .button {
+    width: auto;
+    justify-self: start;
+  }
+}
+
+.auth-panel {
+  display: grid;
+  width: 100%;
+  max-width: 36rem;
+  gap: var(--space-4);
+}
+
+.auth-panel .form {
+  max-width: none;
+}
+
+.auth-prompt {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.auth-prompt a {
+  color: var(--color-accent-active);
+  font-weight: 700;
+  text-underline-offset: 0.2em;
+}
+
+.auth-prompt a:hover {
+  color: var(--color-heading);
+}
+
+.profile-edit-section {
+  display: grid;
+  gap: var(--space-4);
 }

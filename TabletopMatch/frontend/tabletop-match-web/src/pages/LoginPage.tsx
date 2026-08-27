@@ -1,4 +1,4 @@
-import { Navigate } from "react-router";
+import { Link, Navigate } from "react-router";
 import { LoginForm } from "../components/LoginForm";
 import { useAuth } from "../hooks/useAuth";
 
@@ -16,7 +16,15 @@ export function LoginPage() {
   return (
     <section>
       <h1>Log in</h1>
-      <LoginForm />
+
+      <div className="auth-panel">
+        <LoginForm />
+
+        <p className="auth-prompt">
+          Don&apos;t have an account?{" "}
+          <Link to="/register">Create one</Link>.
+        </p>
+      </div>
     </section>
   );
 }
