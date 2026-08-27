@@ -16,31 +16,32 @@ function formatMemberSince(createdAt: string) {
   }).format(date);
 }
 
+type ProfileRequestState = {
+  profileId: string | undefined;
+  profile: PlayerProfile | null;
+  status: "loading" | "success" | "not-found" | "error";
+};
+
 export function PlayerProfilePage() {
   const { profileId } = useParams();
 
-  const [profile, setProfile] =
-    useState<PlayerProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isNotFound, setIsNotFound] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const id = Number(profileId);
+  const hasValidProfileId =
+    Boolean(profileId) && Number.isInteger(id) && id > 0;
+
+  const [requestState, setRequestState] =
+    useState<ProfileRequestState>({
+      profileId,
+      profile: null,
+      status: "loading",
+    });
 
   useEffect(() => {
-    const id = Number(profileId);
-
-    setProfile(null);
-    setError(null);
-    setIsNotFound(false);
-
-    if (!profileId || !Number.isInteger(id) || id <= 0) {
-      setIsLoading(false);
-      setIsNotFound(true);
+    if (!hasValidProfileId) {
       return;
     }
 
     let isCancelled = false;
-
-    setIsLoading(true);
 
     getProfile(id)
       .then((data) => {
@@ -48,31 +49,49 @@ export function PlayerProfilePage() {
           return;
         }
 
-        if (data === null) {
-          setIsNotFound(true);
-          return;
-        }
-
-        setProfile(data);
+        setRequestState({
+          profileId,
+          profile: data,
+          status: data === null ? "not-found" : "success",
+        });
       })
-      .catch((error) => {
+      .catch((requestError) => {
         if (isCancelled) {
           return;
         }
 
-        console.error(error);
-        setError("Failed to load the player profile.");
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
+        console.error(requestError);
+
+        setRequestState({
+          profileId,
+          profile: null,
+          status: "error",
+        });
       });
 
     return () => {
       isCancelled = true;
     };
-  }, [profileId]);
+  }, [hasValidProfileId, id, profileId]);
+
+  const isCurrentRequest =
+    requestState.profileId === profileId;
+
+  const status = !hasValidProfileId
+    ? "not-found"
+    : isCurrentRequest
+      ? requestState.status
+      : "loading";
+
+  const profile =
+    isCurrentRequest ? requestState.profile : null;
+
+  const isLoading = status === "loading";
+  const isNotFound = status === "not-found";
+  const error =
+    status === "error"
+      ? "Failed to load the player profile."
+      : null;
 
   return (
     <section>
