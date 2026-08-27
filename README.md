@@ -264,26 +264,31 @@ Content-Type: application/json
 {
   "participantProfileId": 42
 }
+```
 
 The recipient is identified by their public player profile ID. Internal Identity user IDs and email addresses are not exposed by the messaging API.
 
 Example request for sending a message:
 
+```http
 POST /api/conversations/2711af8a-857a-4fe0-bd4d-4b78843a8aca/messages
 Content-Type: application/json
 
 {
   "content": "Would you like to play this weekend?"
 }
+```
 
 Messages have a maximum length of 2,000 characters. The sender is always determined from the authenticated user and cannot be supplied by the client.
 
 Message history uses cursor pagination:
 
+```http
 GET /api/conversations/{conversationId}/messages?pageSize=50
 GET /api/conversations/{conversationId}/messages?beforeMessageId=120&pageSize=50
+```
 
-pageSize defaults to 50 and must be between 1 and 100. nextCursor can be passed as beforeMessageId to retrieve the next page of older messages.
+`pageSize` defaults to 50 and must be between 1 and 100. `nextCursor` can be passed as `beforeMessageId` to retrieve the next page of older messages.
 
 Users can only read or send messages in conversations where they are participants.
 
@@ -328,7 +333,6 @@ Currently implemented:
 * Keyboard focus indicators and accessible route states
 * Protected routing for the authenticated user's profile
 * Not found page for unknown routes
-
 * Authenticated direct conversations between users
 * Automatic reuse of existing direct conversations
 * Participant-only access to conversations and messages
