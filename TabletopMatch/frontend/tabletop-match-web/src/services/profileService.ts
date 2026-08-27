@@ -1,4 +1,7 @@
-import type { PlayerProfile } from "../types/PlayerProfile";
+import type {
+  PlayerProfile,
+  UpdatePlayerProfileRequest,
+} from "../types/PlayerProfile";
 
 const API_URL = "http://localhost:5252/api/profiles";
 
@@ -6,30 +9,30 @@ export async function getProfiles(): Promise<PlayerProfile[]> {
   const response = await fetch(API_URL);
 
   if (!response.ok) {
-    throw new Error("Failed to fetch profiles");
+    throw new Error("Failed to fetch profiles.");
   }
 
   return response.json();
 }
 
-export type CreatePlayerProfile = {
-  displayName: string;
-  city: string;
-};
-
-export async function createProfile(
-  profile: CreatePlayerProfile
+export async function updateMyProfile(
+  request: UpdatePlayerProfileRequest,
 ): Promise<PlayerProfile> {
-  const response = await fetch(API_URL, {
-    method: "POST",
+  const response = await fetch(`${API_URL}/me`, {
+    method: "PUT",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(profile),
+    body: JSON.stringify(request),
   });
 
   if (!response.ok) {
-    throw new Error("Failed to create profile");
+    const data = await response.json().catch(() => null);
+
+    throw new Error(
+      data?.message ?? "Failed to update profile.",
+    );
   }
 
   return response.json();

@@ -1,80 +1,73 @@
 import { useEffect, useState } from "react";
+import { LoginForm } from "./components/LoginForm";
+import { RegisterForm } from "./components/RegisterForm";
+import { EditProfileForm } from "./components/EditProfileForm";
+import { useAuth } from "./hooks/useAuth";
+import { getProfiles } from "./services/profileService";
 import type { PlayerProfile } from "./types/PlayerProfile";
-import {
-  createProfile,
-  getProfiles,
-} from "./services/profileService";
 
 function App() {
+  const { user, isLoading, logout } = useAuth();
   const [profiles, setProfiles] = useState<PlayerProfile[]>([]);
-  const [displayName, setDisplayName] = useState("");
-  const [city, setCity] = useState("");
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
     getProfiles()
-      .then((data) => setProfiles(data))
-      .catch((error) => console.error(error));
-  }, []);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    try {
-      const newProfile = await createProfile({
-        displayName,
-        city,
+      .then((data) => {
+        setProfiles(data);
+        setProfileError(null);
+      })
+      .catch((error) => {
+        console.error(error);
+        setProfileError("Failed to load players.");
       });
+  }, [user]);
 
-      setProfiles((currentProfiles) => [
-        ...currentProfiles,
-        newProfile,
-      ]);
-
-      setDisplayName("");
-      setCity("");
-    } catch (error) {
-      console.error(error);
-    }
+  if (isLoading) {
+    return (
+      <main>
+        <p>Loading...</p>
+      </main>
+    );
   }
 
   return (
     <main>
       <h1>TabletopMatch</h1>
 
-      <h2>Create profile</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="displayName">Display name</label>
+      {user ? (
+        <section>
+          <h2>Welcome, {user.displayName}</h2>
+          <p>{user.email}</p>
+          <p>{user.city}</p>
+          {user.bio && <p>{user.bio}</p>}
 
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-          />
-        </div>
+          <EditProfileForm />
 
-        <div>
-          <label htmlFor="city">City</label>
+          <button type="button" onClick={() => void logout()}>
+            Log out
+          </button>
+        </section>
+      ) : (
+        <>
+          <LoginForm />
+          <RegisterForm />
+        </>
+      )}
 
-          <input
-            id="city"
-            type="text"
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-          />
-        </div>
+      <section>
+        <h2>Players</h2>
 
-        <button type="submit">Create profile</button>
-      </form>
+        {profileError && <p role="alert">{profileError}</p>}
 
-      <h2>Players</h2>
-      {profiles.map((profile) => (
-        <div key={profile.id}>
-          <h3>{profile.displayName}</h3>
-          <p>{profile.city}</p>
-        </div>
-      ))}
+        {profiles.map((profile) => (
+          <article key={profile.id}>
+            <h3>{profile.displayName}</h3>
+            <p>{profile.city}</p>
+            {profile.bio && <p>{profile.bio}</p>}
+          </article>
+        ))}
+      </section>
     </main>
   );
 }

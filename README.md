@@ -15,6 +15,8 @@ The first version focuses on player profiles and the ability to find other playe
 * **PostgreSQL**
 * **Npgsql**
 * **REST API**
+* **ASP.NET Core Identity**
+* **Cookie-based authentication**
 
 ### Frontend
 
@@ -56,6 +58,7 @@ The project structure will continue to evolve as new functionality is added.
 To run the project locally, make sure you have the following installed:
 
 * [.NET SDK](https://dotnet.microsoft.com/)
+* [Node.js](https://nodejs.org/) and npm
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * Git
 
@@ -63,6 +66,13 @@ Verify that .NET is installed:
 
 ```bash
 dotnet --version
+```
+
+Verify that Node.js and npm are installed:
+
+```bash
+node --version
+npm --version
 ```
 
 Verify that Docker is available:
@@ -131,7 +141,7 @@ Now listening on: http://localhost:5252
 
 The API is now available locally.
  
- ### 5. Start frontend
+### 5. Start frontend
 
 To start the frontend locally, navigate to the frontend project directory:
 
@@ -157,21 +167,41 @@ http://localhost:5173
 
 The project uses a REST API built with ASP.NET Core.
 
-Example endpoint:
+### Authentication
+
+User accounts are managed with ASP.NET Core Identity. The application uses an HTTP-only cookie to keep browser users authenticated.
+
+Registering an account also creates exactly one associated player profile.
+
+| Method | Endpoint | Authentication | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Public | Creates an account and player profile |
+| `POST` | `/api/auth/login` | Public | Logs in and creates an authentication cookie |
+| `POST` | `/api/auth/logout` | Required | Logs out and removes the authentication cookie |
+| `GET` | `/api/auth/me` | Required | Returns the current account and profile |
+
+Example registration request:
 
 ```http
-POST /api/profiles
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "player@example.com",
+  "password": "Test123!",
+  "displayName": "Test Player",
+  "city": "Skövde",
+  "bio": "Looking for people to play tabletop games with."
+}
 ```
+A player profile cannot be created directly. It is created automatically during account registration.
 
-Example request using `curl`:
+| Method | Endpoint             | Authentication | Description                              |
+| ------ | -------------------- | -------------- | ---------------------------------------- |
+| `GET`  | `/api/profiles`      | Public         | Returns all player profiles              |
+| `GET`  | `/api/profiles/{id}` | Public         | Returns one player profile               |
+| `PUT`  | `/api/profiles/me`   | Required       | Updates the authenticated user's profile |
 
-```bash
-curl -X POST http://localhost:5252/api/profiles \
-  -H "Content-Type: application/json" \
-  -d "{\"displayName\":\"Oskar\"}"
-```
-
-The API documentation will be expanded as more endpoints are added.
 
 ## Database Migrations
 
@@ -198,11 +228,13 @@ dotnet ef database update
 
 TabletopMatch is currently in an early stage of development.
 
-The current focus includes:
+Currently implemented:
 
-* Player profiles
-* REST API development
-* Database structure
-* Basic backend architecture
+* User account registration
+* Cookie-based login and logout
+* One player profile per account
+* Public player profile listing
+* Editing of the authenticated user's profile
+* React authentication state management
 
-In the future, the goal is to expand the platform with additional features for finding, connecting, and interacting with other tabletop players.
+The next development steps will focus on improving navigation and interface structure before expanding the player discovery and matching functionality.
