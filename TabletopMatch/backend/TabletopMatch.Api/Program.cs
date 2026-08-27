@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TabletopMatch.Api.Data;
 using TabletopMatch.Api.Models;
+using TabletopMatch.Api.Services.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Application services
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IMessagingService, MessagingService>();
 
 // Identity
 builder.Services
