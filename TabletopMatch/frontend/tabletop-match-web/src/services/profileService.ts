@@ -15,6 +15,22 @@ export async function getProfiles(): Promise<PlayerProfile[]> {
   return response.json();
 }
 
+export async function getProfile(
+  id: number,
+): Promise<PlayerProfile | null> {
+  const response = await fetch(`${API_URL}/${id}`);
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch profile.");
+  }
+
+  return response.json();
+}
+
 export async function updateMyProfile(
   request: UpdatePlayerProfileRequest,
 ): Promise<PlayerProfile> {
