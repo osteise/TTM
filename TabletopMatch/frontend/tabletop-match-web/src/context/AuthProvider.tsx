@@ -80,16 +80,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   return (
-  <AuthContext.Provider
-    value={{
-      user,
-      isLoading,
-      register,
-      login,
-      logout,
-      updateProfile,
-    }}
-  >
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        register,
+        login,
+        logout,
+        updateProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
