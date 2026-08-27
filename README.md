@@ -24,7 +24,7 @@ The first version focuses on player profiles and the ability to find other playe
 * **TypeScript**
 * **Vite**
 * **React Router**
-
+* **CSS**
 
 ### Development
 
@@ -192,6 +192,7 @@ The frontend uses React Router with a shared application layout and navigation.
 |---|---|---|
 | `/` | Public | Home page |
 | `/players` | Public | Lists player profiles |
+| `/players/:profileId` | Public | Shows one public player profile |
 | `/login` | Public | Account login |
 | `/register` | Public | Account registration |
 | `/profile` | Required | Shows and edits the authenticated user's profile |
@@ -270,11 +271,15 @@ Currently implemented:
 * Cookie-based login and logout
 * One player profile per account
 * Public player profile listing
+* Public pages for individual player profiles
 * Editing of the authenticated user's profile
 * React authentication state management
 * React Router page routing
-* Shared navigation and application layout
+* Shared and responsive navigation
+* Responsive frontend design foundation
+* Consistent forms, buttons, and status messages
+* Keyboard focus indicators and accessible route states
 * Protected routing for the authenticated user's profile
 * Not found page for unknown routes
 
-The next development steps will focus on interface styling and expanding the player discovery and matching functionality.
+The next development steps will focus on expanding player profiles, player discovery, and matching functionality.

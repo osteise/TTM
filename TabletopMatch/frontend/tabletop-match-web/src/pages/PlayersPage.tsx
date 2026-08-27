@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { getProfiles } from "../services/profileService";
 import type { PlayerProfile } from "../types/PlayerProfile";
 
@@ -73,29 +74,37 @@ export function PlayersPage() {
         <div className="profile-grid">
           {profiles.map((profile) => (
             <article className="profile-card" key={profile.id}>
-              <header className="profile-card__header">
-                <div
-                  className="profile-avatar"
-                  aria-hidden="true"
-                >
-                  {profile.displayName.charAt(0).toUpperCase()}
-                </div>
+              <Link
+                className="profile-card__link"
+                to={`/players/${profile.id}`}
+                aria-label={`View profile for ${profile.displayName}`}
+              >
+                <header className="profile-card__header">
+                  <div
+                    className="profile-avatar"
+                    aria-hidden="true"
+                  >
+                    {profile.displayName.charAt(0).toUpperCase()}
+                  </div>
 
-                <div>
-                  <h2>{profile.displayName}</h2>
-                  <p className="profile-card__location">
-                    {profile.city}
+                  <div>
+                    <h2>{profile.displayName}</h2>
+                    <p className="profile-card__location">
+                      {profile.city}
+                    </p>
+                  </div>
+                </header>
+
+                {profile.bio ? (
+                  <p className="profile-card__bio">
+                    {profile.bio}
                   </p>
-                </div>
-              </header>
-
-              {profile.bio ? (
-                <p className="profile-card__bio">{profile.bio}</p>
-              ) : (
-                <p className="profile-card__bio profile-card__bio--empty">
-                  No bio added yet.
-                </p>
-              )}
+                ) : (
+                  <p className="profile-card__bio profile-card__bio--empty">
+                    No bio added yet.
+                  </p>
+                )}
+              </Link>
             </article>
           ))}
         </div>
