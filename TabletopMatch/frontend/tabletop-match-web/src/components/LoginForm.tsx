@@ -35,51 +35,47 @@ export function LoginForm() {
   }
 
   return (
-    <section>
-      <h2>Log in</h2>
+    <form onSubmit={handleSubmit}>
+    <div>
+        <label htmlFor="login-email">Email</label>
+        <input
+        id="login-email"
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        required
+        />
+    </div>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="login-email">Email</label>
-          <input
-            id="login-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
+    <div>
+        <label htmlFor="login-password">Password</label>
+        <input
+        id="login-password"
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        required
+        />
+    </div>
 
-        <div>
-          <label htmlFor="login-password">Password</label>
-          <input
-            id="login-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </div>
+    <div>
+        <label>
+        <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(event) =>
+            setRememberMe(event.target.checked)
+            }
+        />
+        Remember me
+        </label>
+    </div>
 
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(event) =>
-                setRememberMe(event.target.checked)
-              }
-            />
-            Remember me
-          </label>
-        </div>
+    {error && <p role="alert">{error}</p>}
 
-        {error && <p role="alert">{error}</p>}
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Logging in..." : "Log in"}
-        </button>
-      </form>
-    </section>
+    <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Logging in..." : "Log in"}
+    </button>
+    </form>
   );
 }

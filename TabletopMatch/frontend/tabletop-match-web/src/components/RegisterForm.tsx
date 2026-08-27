@@ -39,73 +39,69 @@ export function RegisterForm() {
   }
 
   return (
-    <section>
-      <h2>Create account</h2>
+    <form onSubmit={handleSubmit}>
+    <div>
+        <label htmlFor="register-email">Email</label>
+        <input
+        id="register-email"
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        required
+        />
+    </div>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="register-email">Email</label>
-          <input
-            id="register-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
-        </div>
+    <div>
+        <label htmlFor="register-password">Password</label>
+        <input
+        id="register-password"
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        minLength={6}
+        required
+        />
+    </div>
 
-        <div>
-          <label htmlFor="register-password">Password</label>
-          <input
-            id="register-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            minLength={6}
-            required
-          />
-        </div>
+    <div>
+        <label htmlFor="display-name">Display name</label>
+        <input
+        id="display-name"
+        type="text"
+        value={displayName}
+        onChange={(event) => setDisplayName(event.target.value)}
+        maxLength={50}
+        required
+        />
+    </div>
 
-        <div>
-          <label htmlFor="display-name">Display name</label>
-          <input
-            id="display-name"
-            type="text"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            maxLength={50}
-            required
-          />
-        </div>
+    <div>
+        <label htmlFor="register-city">City</label>
+        <input
+        id="register-city"
+        type="text"
+        value={city}
+        onChange={(event) => setCity(event.target.value)}
+        maxLength={100}
+        required
+        />
+    </div>
 
-        <div>
-          <label htmlFor="register-city">City</label>
-          <input
-            id="register-city"
-            type="text"
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-            maxLength={100}
-            required
-          />
-        </div>
+    <div>
+        <label htmlFor="register-bio">Bio</label>
+        <textarea
+        id="register-bio"
+        value={bio}
+        onChange={(event) => setBio(event.target.value)}
+        maxLength={500}
+        />
+    </div>
 
-        <div>
-          <label htmlFor="register-bio">Bio</label>
-          <textarea
-            id="register-bio"
-            value={bio}
-            onChange={(event) => setBio(event.target.value)}
-            maxLength={500}
-          />
-        </div>
+    {error && <p role="alert">{error}</p>}
 
-        {error && <p role="alert">{error}</p>}
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating account..." : "Create account"}
-        </button>
-      </form>
-    </section>
+    <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating account..." : "Create account"}
+    </button>
+    </form>
   );
 }
