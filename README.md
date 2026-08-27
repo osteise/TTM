@@ -23,6 +23,7 @@ The first version focuses on player profiles and the ability to find other playe
 * **React**
 * **TypeScript**
 * **Vite**
+* **React Router**
 
 
 ### Development
@@ -51,6 +52,28 @@ TabletopMatch.Api/
 └── appsettings.json
 ```
 
+The frontend project is located in:
+
+```text
+frontend/
+└── tabletop-match-web/
+```
+
+The frontend source is organized by responsibility:
+
+```text
+src/
+├── components/   # Reusable UI and route guards
+├── context/      # Authentication context and provider
+├── hooks/        # Reusable React hooks
+├── layouts/      # Shared page layouts
+├── pages/        # Route-level page components
+├── services/     # API request functions
+├── types/        # Shared TypeScript types
+├── App.tsx       # Route configuration
+└── main.tsx      # Application entry point
+```
+
 The project structure will continue to evolve as new functionality is added.
 
 ## Prerequisites
@@ -58,7 +81,7 @@ The project structure will continue to evolve as new functionality is added.
 To run the project locally, make sure you have the following installed:
 
 * [.NET SDK](https://dotnet.microsoft.com/)
-* [Node.js](https://nodejs.org/) and npm
+* [Node.js](https://nodejs.org/) and npm (Node.js 20.19+ or 22.12+)
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 * Git
 
@@ -141,11 +164,9 @@ Now listening on: http://localhost:5252
 
 The API is now available locally.
  
-### 5. Start frontend
+### 5. Start the frontend
 
-To start the frontend locally, navigate to the frontend project directory:
-
-From `frontend/tabletop-match-web`, run:
+Navigate to `frontend/tabletop-match-web`.
 
 Install the dependencies if you have not already done so:
 
@@ -162,6 +183,21 @@ npm run dev
 The frontend will usually be available at:
 
 http://localhost:5173
+
+## Frontend Routing
+
+The frontend uses React Router with a shared application layout and navigation.
+
+| Path | Access | Description |
+|---|---|---|
+| `/` | Public | Home page |
+| `/players` | Public | Lists player profiles |
+| `/login` | Public | Account login |
+| `/register` | Public | Account registration |
+| `/profile` | Required | Shows and edits the authenticated user's profile |
+| `*` | Public | Displays the not found page |
+
+The `/profile` route is protected and redirects unauthenticated users to `/login`. Authenticated users visiting `/login` or `/register` are redirected to `/profile`.
 
 ## API
 
@@ -236,5 +272,9 @@ Currently implemented:
 * Public player profile listing
 * Editing of the authenticated user's profile
 * React authentication state management
+* React Router page routing
+* Shared navigation and application layout
+* Protected routing for the authenticated user's profile
+* Not found page for unknown routes
 
-The next development steps will focus on improving navigation and interface structure before expanding the player discovery and matching functionality.
+The next development steps will focus on interface styling and expanding the player discovery and matching functionality.
