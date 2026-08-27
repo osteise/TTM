@@ -5,7 +5,14 @@ export function ProtectedRoute() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return (
+      <p
+        className="status-message status-message--neutral loading-message"
+        role="status"
+      >
+        Loading your profile...
+      </p>
+    );
   }
 
   if (!user) {

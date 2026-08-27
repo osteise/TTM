@@ -6,8 +6,10 @@ export function MainLayout() {
     <>
       <Navigation />
 
-      <main>
-        <Outlet />
+      <main className="site-main">
+        <div className="content-container">
+          <Outlet />
+        </div>
       </main>
     </>
   );

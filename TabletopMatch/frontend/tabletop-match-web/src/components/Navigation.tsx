@@ -5,31 +5,43 @@ export function Navigation() {
   const { user, isLoading, logout } = useAuth();
 
   return (
-    <header>
-      <nav aria-label="Main navigation">
-        <NavLink to="/" end>
+    <header className="site-header">
+      <nav
+        className="site-navigation"
+        aria-label="Main navigation"
+      >
+        <NavLink className="site-brand" to="/" end>
           TabletopMatch
         </NavLink>
 
-        <ul>
+        <ul className="navigation-list">
           <li>
-            <NavLink to="/" end>
+            <NavLink className="navigation-link" to="/" end>
               Home
             </NavLink>
           </li>
 
           <li>
-            <NavLink to="/players">Players</NavLink>
+            <NavLink className="navigation-link" to="/players">
+              Players
+            </NavLink>
           </li>
 
           {!isLoading &&
             (user ? (
               <>
                 <li>
-                  <NavLink to="/profile">My profile</NavLink>
+                  <NavLink
+                    className="navigation-link"
+                    to="/profile"
+                  >
+                    My profile
+                  </NavLink>
                 </li>
+
                 <li>
                   <button
+                    className="navigation-button"
                     type="button"
                     onClick={() => void logout()}
                   >
@@ -38,16 +50,14 @@ export function Navigation() {
                 </li>
               </>
             ) : (
-              <>
-                <li>
-                  <NavLink to="/login">Log in</NavLink>
-                </li>
-                <li>
-                  <NavLink to="/register">
-                    Create account
-                  </NavLink>
-                </li>
-              </>
+              <li>
+                <NavLink
+                  className="navigation-link"
+                  to="/login"
+                >
+                  Log in
+                </NavLink>
+              </li>
             ))}
         </ul>
       </nav>

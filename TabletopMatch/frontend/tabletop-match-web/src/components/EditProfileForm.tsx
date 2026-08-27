@@ -47,11 +47,11 @@ export function EditProfileForm() {
   }
 
   return (
-    <section>
+    <section className="profile-edit-section">
       <h2>Edit profile</h2>
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form className="form" onSubmit={handleSubmit}>
+        <div className="form-field">
           <label htmlFor="edit-display-name">
             Display name
           </label>
@@ -62,24 +62,26 @@ export function EditProfileForm() {
             onChange={(event) =>
               setDisplayName(event.target.value)
             }
+            autoComplete="nickname"
             maxLength={50}
             required
           />
         </div>
 
-        <div>
+        <div className="form-field">
           <label htmlFor="edit-city">City</label>
           <input
             id="edit-city"
             type="text"
             value={city}
             onChange={(event) => setCity(event.target.value)}
+            autoComplete="address-level2"
             maxLength={100}
             required
           />
         </div>
 
-        <div>
+        <div className="form-field">
           <label htmlFor="edit-bio">Bio</label>
           <textarea
             id="edit-bio"
@@ -89,10 +91,29 @@ export function EditProfileForm() {
           />
         </div>
 
-        {error && <p role="alert">{error}</p>}
-        {successMessage && <p>{successMessage}</p>}
+        {error && (
+          <p
+            className="status-message status-message--error"
+            role="alert"
+          >
+            {error}
+          </p>
+        )}
 
-        <button type="submit" disabled={isSubmitting}>
+        {successMessage && (
+          <p
+            className="status-message status-message--success"
+            role="status"
+          >
+            {successMessage}
+          </p>
+        )}
+
+        <button
+          className="button button--primary"
+          type="submit"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Saving..." : "Save profile"}
         </button>
       </form>
