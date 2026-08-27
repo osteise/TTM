@@ -230,7 +230,7 @@ public class MessagingService : IMessagingService
         string content,
         CancellationToken cancellationToken = default)
     {
-        var trimmedContent = content.Trim();
+        var trimmedContent = content?.Trim() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(trimmedContent))
         {
