@@ -422,7 +422,7 @@ body {
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(
-    auto-fit,
+    auto-fill,
     minmax(min(100%, 18rem), 1fr)
   );
   gap: var(--space-4);
