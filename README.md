@@ -45,9 +45,12 @@ The ASP.NET Core application currently contains, among other things:
 
 ```text
 TabletopMatch.Api/
-├── Data/
-├── Models/
-├── Migrations/
+├── Contracts/     # API request and response models
+├── Controllers/   # REST API endpoints
+├── Data/          # Entity Framework database context
+├── Migrations/    # Entity Framework migrations
+├── Models/        # Database entities
+├── Services/      # Application and business logic
 ├── Program.cs
 └── appsettings.json
 ```
@@ -239,6 +242,55 @@ A player profile cannot be created directly. It is created automatically during 
 | `GET`  | `/api/profiles/{id}` | Public         | Returns one player profile               |
 | `PUT`  | `/api/profiles/me`   | Required       | Updates the authenticated user's profile |
 
+### Direct Messaging
+
+Direct messaging is implemented in the existing ASP.NET Core API. All messaging endpoints require cookie-based authentication.
+
+A direct conversation contains exactly two participants. When the same user pair starts another direct conversation, the existing conversation is returned instead of creating a duplicate.
+
+| Method | Endpoint | Authentication | Description |
+|---|---|---|---|
+| `POST` | `/api/conversations/direct` | Required | Creates or returns a direct conversation |
+| `GET` | `/api/conversations` | Required | Returns the authenticated user's conversations |
+| `GET` | `/api/conversations/{conversationId}/messages` | Required | Returns a paginated message history |
+| `POST` | `/api/conversations/{conversationId}/messages` | Required | Sends a message in a conversation |
+
+Example request for starting a direct conversation:
+
+```http
+POST /api/conversations/direct
+Content-Type: application/json
+
+{
+  "participantProfileId": 42
+}
+```
+
+The recipient is identified by their public player profile ID. Internal Identity user IDs and email addresses are not exposed by the messaging API.
+
+Example request for sending a message:
+
+```http
+POST /api/conversations/2711af8a-857a-4fe0-bd4d-4b78843a8aca/messages
+Content-Type: application/json
+
+{
+  "content": "Would you like to play this weekend?"
+}
+```
+
+Messages have a maximum length of 2,000 characters. The sender is always determined from the authenticated user and cannot be supplied by the client.
+
+Message history uses cursor pagination:
+
+```http
+GET /api/conversations/{conversationId}/messages?pageSize=50
+GET /api/conversations/{conversationId}/messages?beforeMessageId=120&pageSize=50
+```
+
+`pageSize` defaults to 50 and must be between 1 and 100. `nextCursor` can be passed as `beforeMessageId` to retrieve the next page of older messages.
+
+Users can only read or send messages in conversations where they are participants.
 
 ## Database Migrations
 
@@ -281,5 +333,11 @@ Currently implemented:
 * Keyboard focus indicators and accessible route states
 * Protected routing for the authenticated user's profile
 * Not found page for unknown routes
+* Authenticated direct conversations between users
+* Automatic reuse of existing direct conversations
+* Participant-only access to conversations and messages
+* Cursor-paginated message history
+* Validated messages with a 2,000-character limit
+* UTC timestamps and indexed messaging tables
 
-The next development steps will focus on expanding player profiles, player discovery, and matching functionality.
+The next development steps will focus on building the frontend inbox and conversation view, followed by further player discovery and matching functionality.
