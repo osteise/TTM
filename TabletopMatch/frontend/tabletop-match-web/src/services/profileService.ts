@@ -2,6 +2,11 @@ import type { PlayerProfile } from "../types/PlayerProfile";
 
 const API_URL = "http://localhost:5252/api/profiles";
 
+export type CreatePlayerProfile = {
+  displayName: string;
+  city: string;
+};
+
 export async function getProfiles(): Promise<PlayerProfile[]> {
   const response = await fetch(API_URL);
 
@@ -11,11 +16,6 @@ export async function getProfiles(): Promise<PlayerProfile[]> {
 
   return response.json();
 }
-
-export type CreatePlayerProfile = {
-  displayName: string;
-  city: string;
-};
 
 export async function createProfile(
   profile: CreatePlayerProfile

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace TabletopMatch.Api.Models;
 
 public class PlayerProfile
@@ -11,4 +13,10 @@ public class PlayerProfile
     public string City { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [JsonIgnore]
+    public string UserId { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public AppUser User { get; set; } = null!;
 }
