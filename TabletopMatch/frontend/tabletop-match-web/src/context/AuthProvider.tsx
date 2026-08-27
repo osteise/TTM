@@ -12,6 +12,8 @@ import type {
   RegisterRequest,
 } from "../types/Auth";
 import { AuthContext } from "./AuthContext";
+import { updateMyProfile } from "../services/profileService";
+import type { UpdatePlayerProfileRequest } from "../types/PlayerProfile";
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -58,16 +60,36 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setUser(null);
   }
 
+  async function updateProfile(
+    request: UpdatePlayerProfileRequest,
+  ) {
+    const updatedProfile = await updateMyProfile(request);
+
+    setUser((currentUser) => {
+      if (currentUser === null) {
+        return null;
+      }
+
+      return {
+        ...currentUser,
+        displayName: updatedProfile.displayName,
+        city: updatedProfile.city,
+        bio: updatedProfile.bio,
+      };
+    });
+  }
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        register,
-        login,
-        logout,
-      }}
-    >
+  <AuthContext.Provider
+    value={{
+      user,
+      isLoading,
+      register,
+      login,
+      logout,
+      updateProfile,
+    }}
+  >
       {children}
     </AuthContext.Provider>
   );

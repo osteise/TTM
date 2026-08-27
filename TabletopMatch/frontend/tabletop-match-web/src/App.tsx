@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
+import { EditProfileForm } from "./components/EditProfileForm";
 import { useAuth } from "./hooks/useAuth";
 import { getProfiles } from "./services/profileService";
 import type { PlayerProfile } from "./types/PlayerProfile";
@@ -20,7 +21,7 @@ function App() {
         console.error(error);
         setProfileError("Failed to load players.");
       });
-  }, [user?.profileId]);
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -40,6 +41,8 @@ function App() {
           <p>{user.email}</p>
           <p>{user.city}</p>
           {user.bio && <p>{user.bio}</p>}
+
+          <EditProfileForm />
 
           <button type="button" onClick={() => void logout()}>
             Log out
