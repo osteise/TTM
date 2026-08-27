@@ -2,7 +2,7 @@ import { EditProfileForm } from "../components/EditProfileForm";
 import { useAuth } from "../hooks/useAuth";
 
 export function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   if (!user) {
     return null;
@@ -18,10 +18,6 @@ export function ProfilePage() {
       {user.bio && <p>{user.bio}</p>}
 
       <EditProfileForm />
-
-      <button type="button" onClick={() => void logout()}>
-        Log out
-      </button>
     </section>
   );
 }
