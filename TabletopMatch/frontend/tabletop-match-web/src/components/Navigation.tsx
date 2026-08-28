@@ -33,6 +33,14 @@ export function Navigation() {
                 <li>
                   <NavLink
                     className="navigation-link"
+                    to="/messages"
+                  >
+                    Messages
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    className="navigation-link"
                     to="/profile"
                   >
                     My profile

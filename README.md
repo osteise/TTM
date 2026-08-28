@@ -199,9 +199,12 @@ The frontend uses React Router with a shared application layout and navigation.
 | `/login` | Public | Account login |
 | `/register` | Public | Account registration |
 | `/profile` | Required | Shows and edits the authenticated user's profile |
+| `/messages` | Required | Shows the authenticated user's conversation inbox |
+| `/messages/new/:profileId` | Required | Composes the first message to another player |
+| `/messages/:conversationId` | Required | Shows and sends messages in a conversation |
 | `*` | Public | Displays the not found page |
 
-The `/profile` route is protected and redirects unauthenticated users to `/login`. Authenticated users visiting `/login` or `/register` are redirected to `/profile`.
+The `/profile` and `/messages` routes are protected and redirect unauthenticated users to `/login`. Authenticated users visiting `/login` or `/register` are redirected to `/profile`.
 
 ## API
 
@@ -344,5 +347,9 @@ Currently implemented:
 * UTC timestamps and indexed messaging tables
 * Atomic creation of direct conversations with the first message
 * Conversation lists that exclude empty conversations
+* Responsive messaging inbox and conversation views
+* Protected routes for conversations and new-message drafts
+* First-message draft flow that avoids empty conversations
+* Client-side message validation and character counting
 
-The next development steps will focus on building the frontend inbox and conversation view, followed by further player discovery and matching functionality.
+The next development steps will focus on unread message indicators, followed by further player discovery and matching functionality.

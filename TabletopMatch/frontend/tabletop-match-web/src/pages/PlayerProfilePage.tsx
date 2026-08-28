@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { getProfile } from "../services/profileService";
 import type { PlayerProfile } from "../types/PlayerProfile";
+import { useAuth } from "../hooks/useAuth";
 
 function formatMemberSince(createdAt: string) {
   const date = new Date(createdAt);
@@ -24,6 +25,8 @@ type ProfileRequestState = {
 
 export function PlayerProfilePage() {
   const { profileId } = useParams();
+
+  const { user } = useAuth();
 
   const id = Number(profileId);
   const hasValidProfileId =
@@ -172,6 +175,16 @@ export function PlayerProfilePage() {
                 </dd>
               </div>
             </dl>
+            {user && profile.id !== user.profileId && (
+              <div className="profile-summary__actions">
+                <Link
+                  className="button button--primary"
+                  to={`/messages/new/${profile.id}`}
+                >
+                  Message player
+                </Link>
+              </div>
+            )}
           </article>
         </>
       )}
