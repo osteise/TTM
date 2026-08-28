@@ -315,7 +315,7 @@ Content-Type: application/json
 
 The message must belong to the conversation, and the read marker can only move forward. Sending a message automatically advances the sender's read marker to the newly created message.
 
-Conversation responses include an unreadCount. The lightweight /api/conversations/unread-count endpoint returns the total unread count without returning the full inbox.
+Conversation responses include an `unreadCount`. The lightweight `/api/conversations/unread-count` endpoint returns the total unread count without returning the full inbox.
 
 ## Database Migrations
 
