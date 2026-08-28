@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { getProfile } from "../services/profileService";
 import type { PlayerProfile } from "../types/PlayerProfile";
+import { useAuth } from "../hooks/useAuth";
+import { startDirectConversation } from "../services/messagingService";
 
 function formatMemberSince(createdAt: string) {
   const date = new Date(createdAt);
@@ -24,6 +26,16 @@ type ProfileRequestState = {
 
 export function PlayerProfilePage() {
   const { profileId } = useParams();
+
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [isStartingConversation, setIsStartingConversation] =
+    useState(false);
+
+  const [conversationError, setConversationError] = useState<
+    string | null
+  >(null);
 
   const id = Number(profileId);
   const hasValidProfileId =
@@ -92,6 +104,36 @@ export function PlayerProfilePage() {
     status === "error"
       ? "Failed to load the player profile."
       : null;
+
+  async function handleStartConversation() {
+    if (
+      !profile ||
+      !user ||
+      profile.id === user.profileId ||
+      isStartingConversation
+    ) {
+      return;
+    }
+
+    setIsStartingConversation(true);
+    setConversationError(null);
+
+    try {
+      const conversation = await startDirectConversation(
+        profile.id,
+      );
+
+      navigate(`/messages/${conversation.id}`);
+    } catch (requestError) {
+      setConversationError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Failed to start the conversation.",
+      );
+    } finally {
+      setIsStartingConversation(false);
+    }
+  }
 
   return (
     <section>
@@ -172,6 +214,29 @@ export function PlayerProfilePage() {
                 </dd>
               </div>
             </dl>
+            {user && profile.id !== user.profileId && (
+              <div className="profile-summary__actions">
+                <button
+                  className="button button--primary"
+                  type="button"
+                  disabled={isStartingConversation}
+                  onClick={() => void handleStartConversation()}
+                >
+                  {isStartingConversation
+                    ? "Opening conversation..."
+                    : "Message player"}
+                </button>
+
+                {conversationError && (
+                  <p
+                    className="status-message status-message--error"
+                    role="alert"
+                  >
+                    {conversationError}
+                  </p>
+                )}
+              </div>
+            )}
           </article>
         </>
       )}
