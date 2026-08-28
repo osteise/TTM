@@ -244,8 +244,6 @@ A player profile cannot be created directly. It is created automatically during 
 
 ### Direct Messaging
 
-### Direct Messaging
-
 Direct messaging is implemented in the existing ASP.NET Core API. All messaging endpoints require cookie-based authentication.
 
 A direct conversation contains exactly two participants. The conversation and its first message are saved in the same database transaction, so an empty conversation is not created if sending the message fails.
@@ -292,6 +290,10 @@ Message history uses cursor pagination:
 GET /api/conversations/{conversationId}/messages?pageSize=50
 GET /api/conversations/{conversationId}/messages?beforeMessageId=120&pageSize=50
 ```
+
+`pageSize` defaults to 50 and must be between 1 and 100. `nextCursor` can be passed as `beforeMessageId` to retrieve the next page of older messages.
+
+Users can only read or send messages in conversations where they are participants.
 
 ## Database Migrations
 

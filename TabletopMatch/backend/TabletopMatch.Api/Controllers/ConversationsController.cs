@@ -21,8 +21,8 @@ public class ConversationsController : ControllerBase
 
     [HttpPost("direct/messages")]
     public async Task<ActionResult<MessageResponse>> SendDirectMessage(
-    SendDirectMessageRequest request,
-    CancellationToken cancellationToken)
+        SendDirectMessageRequest request,
+        CancellationToken cancellationToken)
     {
         var currentUserId = GetCurrentUserId();
 

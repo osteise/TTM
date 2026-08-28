@@ -130,10 +130,10 @@ public class MessagingService : IMessagingService
     }
 
     public async Task<MessageResponse?> SendDirectMessageAsync(
-    string currentUserId,
-    int participantProfileId,
-    string content,
-    CancellationToken cancellationToken = default)
+        string currentUserId,
+        int participantProfileId,
+        string content,
+        CancellationToken cancellationToken = default)
     {
         var trimmedContent = ValidateMessageContent(content);
 
