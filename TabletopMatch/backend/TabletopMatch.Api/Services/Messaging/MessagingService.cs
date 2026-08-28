@@ -180,9 +180,39 @@ public class MessagingService : IMessagingService
                 conversation.LastActivityAt)
             .ToListAsync(cancellationToken);
 
+        var unreadCounts = await CreateUnreadMessagesQuery(
+                currentUserId)
+            .GroupBy(message => message.ConversationId)
+            .Select(group => new
+            {
+                ConversationId = group.Key,
+                UnreadCount = group.Count()
+            })
+            .ToDictionaryAsync(
+                item => item.ConversationId,
+                item => item.UnreadCount,
+                cancellationToken);
+
         return conversations
-            .Select(CreateConversationResponse)
+            .Select(conversation => CreateConversationResponse(
+                conversation,
+                unreadCounts.GetValueOrDefault(conversation.Id)))
             .ToList();
+    }
+
+    public async Task<UnreadMessagesCountResponse>
+    GetUnreadMessagesCountAsync(
+        string currentUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var unreadCount = await CreateUnreadMessagesQuery(
+                currentUserId)
+            .CountAsync(cancellationToken);
+
+        return new UnreadMessagesCountResponse
+        {
+            UnreadCount = unreadCount
+        };
     }
 
     public async Task<PagedMessagesResponse?> GetMessagesAsync(
@@ -311,6 +341,20 @@ public class MessagingService : IMessagingService
         };
     }
 
+    private IQueryable<Message> CreateUnreadMessagesQuery(
+    string currentUserId)
+    {
+        return _context.Messages
+            .AsNoTracking()
+            .Where(message =>
+                message.SenderId != currentUserId &&
+                message.Conversation.Participants.Any(participant =>
+                    participant.UserId == currentUserId &&
+                    (!participant.LastReadMessageId.HasValue ||
+                        message.Id >
+                        participant.LastReadMessageId.Value)));
+    }
+
     private IQueryable<Conversation> CreateConversationQuery(
         string currentUserId)
     {
@@ -344,7 +388,8 @@ public class MessagingService : IMessagingService
     }
 
     private static ConversationResponse CreateConversationResponse(
-        Conversation conversation)
+        Conversation conversation,
+        int unreadCount = 0)
     {
         var lastMessage = conversation.Messages
             .OrderByDescending(message => message.Id)
@@ -356,6 +401,7 @@ public class MessagingService : IMessagingService
             Type = conversation.Type.ToString(),
             CreatedAt = conversation.CreatedAt,
             LastActivityAt = conversation.LastActivityAt,
+            UnreadCount = unreadCount,
             Participants = conversation.Participants
                 .Select(participant =>
                     new ConversationParticipantResponse

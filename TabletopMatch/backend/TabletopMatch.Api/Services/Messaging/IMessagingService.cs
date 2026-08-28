@@ -14,6 +14,10 @@ public interface IMessagingService
         string currentUserId,
         CancellationToken cancellationToken = default);
 
+    Task<UnreadMessagesCountResponse> GetUnreadMessagesCountAsync(
+        string currentUserId,
+        CancellationToken cancellationToken = default);
+
     Task<PagedMessagesResponse?> GetMessagesAsync(
         string currentUserId,
         Guid conversationId,
