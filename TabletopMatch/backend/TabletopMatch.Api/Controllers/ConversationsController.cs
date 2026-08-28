@@ -19,11 +19,10 @@ public class ConversationsController : ControllerBase
         _messagingService = messagingService;
     }
 
-    [HttpPost("direct")]
-    public async Task<ActionResult<ConversationResponse>>
-        StartDirectConversation(
-            StartDirectConversationRequest request,
-            CancellationToken cancellationToken)
+    [HttpPost("direct/messages")]
+    public async Task<ActionResult<MessageResponse>> SendDirectMessage(
+        SendDirectMessageRequest request,
+        CancellationToken cancellationToken)
     {
         var currentUserId = GetCurrentUserId();
 
@@ -34,14 +33,14 @@ public class ConversationsController : ControllerBase
 
         try
         {
-            var result =
-                await _messagingService
-                    .GetOrCreateDirectConversationAsync(
-                        currentUserId,
-                        request.ParticipantProfileId,
-                        cancellationToken);
+            var message =
+                await _messagingService.SendDirectMessageAsync(
+                    currentUserId,
+                    request.ParticipantProfileId,
+                    request.Content,
+                    cancellationToken);
 
-            if (result is null)
+            if (message is null)
             {
                 return NotFound(new
                 {
@@ -49,14 +48,9 @@ public class ConversationsController : ControllerBase
                 });
             }
 
-            if (result.WasCreated)
-            {
-                return StatusCode(
-                    StatusCodes.Status201Created,
-                    result.Conversation);
-            }
-
-            return Ok(result.Conversation);
+            return StatusCode(
+                StatusCodes.Status201Created,
+                message);
         }
         catch (MessagingValidationException exception)
         {
