@@ -177,16 +177,12 @@ export function PlayerProfilePage() {
             </dl>
             {user && profile.id !== user.profileId && (
               <div className="profile-summary__actions">
-                {user && profile.id !== user.profileId && (
-                  <div className="profile-summary__actions">
-                    <Link
-                      className="button button--primary"
-                      to={`/messages/new/${profile.id}`}
-                    >
-                      Message player
-                    </Link>
-                  </div>
-                )}
+                <Link
+                  className="button button--primary"
+                  to={`/messages/new/${profile.id}`}
+                >
+                  Message player
+                </Link>
               </div>
             )}
           </article>
