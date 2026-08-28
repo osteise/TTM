@@ -10,6 +10,8 @@ public class ConversationResponse
 
     public DateTime LastActivityAt { get; set; }
 
+    public int UnreadCount { get; set; }
+
     public IReadOnlyList<ConversationParticipantResponse> Participants
     { get; set; } = Array.Empty<ConversationParticipantResponse>();
 
