@@ -81,6 +81,26 @@ public class ConversationsController : ControllerBase
         return Ok(conversations);
     }
 
+    [HttpGet("unread-count")]
+    public async Task<ActionResult<UnreadMessagesCountResponse>>
+    GetUnreadMessagesCount(
+        CancellationToken cancellationToken)
+    {
+        var currentUserId = GetCurrentUserId();
+
+        if (currentUserId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result =
+            await _messagingService.GetUnreadMessagesCountAsync(
+                currentUserId,
+                cancellationToken);
+
+        return Ok(result);
+    }
+
     [HttpGet("{conversationId:guid}/messages")]
     public async Task<ActionResult<PagedMessagesResponse>>
         GetMessages(
@@ -103,6 +123,48 @@ public class ConversationsController : ControllerBase
                 request.BeforeMessageId,
                 request.PageSize,
                 cancellationToken);
+
+            if (result is null)
+            {
+                return NotFound(new
+                {
+                    message = "The conversation was not found."
+                });
+            }
+
+            return Ok(result);
+        }
+        catch (MessagingValidationException exception)
+        {
+            return BadRequest(new
+            {
+                message = exception.Message
+            });
+        }
+    }
+
+    [HttpPut("{conversationId:guid}/read-status")]
+    public async Task<ActionResult<ConversationReadStatusResponse>>
+        MarkConversationAsRead(
+            Guid conversationId,
+            MarkConversationReadRequest request,
+            CancellationToken cancellationToken)
+    {
+        var currentUserId = GetCurrentUserId();
+
+        if (currentUserId is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var result =
+                await _messagingService.MarkConversationAsReadAsync(
+                    currentUserId,
+                    conversationId,
+                    request.LastReadMessageId,
+                    cancellationToken);
 
             if (result is null)
             {
