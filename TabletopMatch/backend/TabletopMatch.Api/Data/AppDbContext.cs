@@ -67,6 +67,20 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasForeignKey(item => item.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            participant.HasOne<Message>()
+                .WithMany()
+                .HasForeignKey(item => new
+                {
+                    item.ConversationId,
+                    item.LastReadMessageId
+                })
+                .HasPrincipalKey(item => new
+                {
+                    item.ConversationId,
+                    item.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
+
             participant.HasIndex(item => new
             {
                 item.UserId,
@@ -92,7 +106,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasForeignKey(item => item.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            message.HasIndex(item => new
+            message.HasAlternateKey(item => new
             {
                 item.ConversationId,
                 item.Id

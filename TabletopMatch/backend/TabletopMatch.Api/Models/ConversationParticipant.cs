@@ -8,6 +8,8 @@ public class ConversationParticipant
 
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
 
+    public long? LastReadMessageId { get; set; }
+
     public Conversation Conversation { get; set; } = null!;
 
     public AppUser User { get; set; } = null!;

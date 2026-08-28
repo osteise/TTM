@@ -152,7 +152,7 @@ public class MessagingService : IMessagingService
             return null;
         }
 
-        var message = await SendMessageAsync(
+        var message = await SendMessageCoreAsync(
             currentUserId,
             conversation.Id,
             trimmedContent,
@@ -180,9 +180,39 @@ public class MessagingService : IMessagingService
                 conversation.LastActivityAt)
             .ToListAsync(cancellationToken);
 
+        var unreadCounts = await CreateUnreadMessagesQuery(
+                currentUserId)
+            .GroupBy(message => message.ConversationId)
+            .Select(group => new
+            {
+                ConversationId = group.Key,
+                UnreadCount = group.Count()
+            })
+            .ToDictionaryAsync(
+                item => item.ConversationId,
+                item => item.UnreadCount,
+                cancellationToken);
+
         return conversations
-            .Select(CreateConversationResponse)
+            .Select(conversation => CreateConversationResponse(
+                conversation,
+                unreadCounts.GetValueOrDefault(conversation.Id)))
             .ToList();
+    }
+
+    public async Task<UnreadMessagesCountResponse>
+        GetUnreadMessagesCountAsync(
+            string currentUserId,
+            CancellationToken cancellationToken = default)
+    {
+        var unreadCount = await CreateUnreadMessagesQuery(
+                currentUserId)
+            .CountAsync(cancellationToken);
+
+        return new UnreadMessagesCountResponse
+        {
+            UnreadCount = unreadCount
+        };
     }
 
     public async Task<PagedMessagesResponse?> GetMessagesAsync(
@@ -251,15 +281,128 @@ public class MessagingService : IMessagingService
         };
     }
 
+    public async Task<ConversationReadStatusResponse?>
+        MarkConversationAsReadAsync(
+            string currentUserId,
+            Guid conversationId,
+            long lastReadMessageId,
+            CancellationToken cancellationToken = default)
+    {
+        if (lastReadMessageId <= 0)
+        {
+            throw new MessagingValidationException(
+                "The message ID must be greater than zero.");
+        }
+
+        var isParticipant = await _context.ConversationParticipants
+            .AsNoTracking()
+            .AnyAsync(
+                participant =>
+                    participant.ConversationId == conversationId &&
+                    participant.UserId == currentUserId,
+                cancellationToken);
+
+        if (!isParticipant)
+        {
+            return null;
+        }
+
+        var messageBelongsToConversation = await _context.Messages
+            .AsNoTracking()
+            .AnyAsync(
+                message =>
+                    message.ConversationId == conversationId &&
+                    message.Id == lastReadMessageId,
+                cancellationToken);
+
+        if (!messageBelongsToConversation)
+        {
+            throw new MessagingValidationException(
+                "The message does not belong to the conversation.");
+        }
+
+        await AdvanceReadMarkerAsync(
+            currentUserId,
+            conversationId,
+            lastReadMessageId,
+            cancellationToken);
+
+        return await _context.ConversationParticipants
+            .AsNoTracking()
+            .Where(participant =>
+                participant.ConversationId == conversationId &&
+                participant.UserId == currentUserId)
+            .Select(participant =>
+                new ConversationReadStatusResponse
+                {
+                    ConversationId = participant.ConversationId,
+                    LastReadMessageId =
+                        participant.LastReadMessageId ??
+                        lastReadMessageId,
+                    UnreadCount =
+                        participant.Conversation.Messages.Count(message =>
+                            message.SenderId != currentUserId &&
+                            (!participant.LastReadMessageId.HasValue ||
+                                message.Id >
+                                participant.LastReadMessageId.Value))
+                })
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    private Task<int> AdvanceReadMarkerAsync(
+        string currentUserId,
+        Guid conversationId,
+        long lastReadMessageId,
+        CancellationToken cancellationToken)
+    {
+        return _context.ConversationParticipants
+            .Where(participant =>
+                participant.ConversationId == conversationId &&
+                participant.UserId == currentUserId &&
+                (!participant.LastReadMessageId.HasValue ||
+                    participant.LastReadMessageId.Value <
+                    lastReadMessageId))
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    participant => participant.LastReadMessageId,
+                    (long?)lastReadMessageId),
+                cancellationToken);
+    }
+
     public async Task<MessageResponse?> SendMessageAsync(
         string currentUserId,
         Guid conversationId,
         string content,
         CancellationToken cancellationToken = default)
     {
-
         var trimmedContent = ValidateMessageContent(content);
 
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                cancellationToken);
+
+        var message = await SendMessageCoreAsync(
+            currentUserId,
+            conversationId,
+            trimmedContent,
+            cancellationToken);
+
+        if (message is null)
+        {
+            return null;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return message;
+    }
+
+    private async Task<MessageResponse?> SendMessageCoreAsync(
+        string currentUserId,
+        Guid conversationId,
+        string trimmedContent,
+        CancellationToken cancellationToken)
+    {
         var conversation = await _context.Conversations
             .SingleOrDefaultAsync(
                 item =>
@@ -300,6 +443,12 @@ public class MessagingService : IMessagingService
         _context.Messages.Add(message);
         await _context.SaveChangesAsync(cancellationToken);
 
+        await AdvanceReadMarkerAsync(
+            currentUserId,
+            conversationId,
+            message.Id,
+            cancellationToken);
+
         return new MessageResponse
         {
             Id = message.Id,
@@ -309,6 +458,20 @@ public class MessagingService : IMessagingService
             Content = message.Content,
             SentAt = message.SentAt
         };
+    }
+
+    private IQueryable<Message> CreateUnreadMessagesQuery(
+        string currentUserId)
+    {
+        return _context.Messages
+            .AsNoTracking()
+            .Where(message =>
+                message.SenderId != currentUserId &&
+                message.Conversation.Participants.Any(participant =>
+                    participant.UserId == currentUserId &&
+                    (!participant.LastReadMessageId.HasValue ||
+                        message.Id >
+                        participant.LastReadMessageId.Value)));
     }
 
     private IQueryable<Conversation> CreateConversationQuery(
@@ -344,7 +507,8 @@ public class MessagingService : IMessagingService
     }
 
     private static ConversationResponse CreateConversationResponse(
-        Conversation conversation)
+        Conversation conversation,
+        int unreadCount = 0)
     {
         var lastMessage = conversation.Messages
             .OrderByDescending(message => message.Id)
@@ -356,6 +520,7 @@ public class MessagingService : IMessagingService
             Type = conversation.Type.ToString(),
             CreatedAt = conversation.CreatedAt,
             LastActivityAt = conversation.LastActivityAt,
+            UnreadCount = unreadCount,
             Participants = conversation.Participants
                 .Select(participant =>
                     new ConversationParticipantResponse
