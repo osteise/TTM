@@ -399,61 +399,6 @@ export function ConversationPage() {
                 const isOwnMessage =
                   message.senderProfileId === user.profileId;
 
-                <form
-                  className="message-composer"
-                  onSubmit={handleSubmit}
-                >
-                  <label htmlFor="message-content">
-                    Message
-                  </label>
-
-                  <textarea
-                    id="message-content"
-                    name="content"
-                    rows={4}
-                    maxLength={MESSAGE_MAX_LENGTH}
-                    value={content}
-                    disabled={isSending}
-                    onChange={(event) => {
-                      setContent(event.target.value);
-
-                      if (sendError) {
-                        setSendError(null);
-                      }
-                    }}
-                    placeholder="Write a message..."
-                    required
-                  />
-
-                  <div className="message-composer__footer">
-                    <span
-                      className="message-character-count"
-                      aria-live="polite"
-                    >
-                      {content.length} / {MESSAGE_MAX_LENGTH}
-                    </span>
-
-                    <button
-                      className="button button--primary"
-                      type="submit"
-                      disabled={
-                        isSending || content.trim().length === 0
-                      }
-                    >
-                      {isSending ? "Sending..." : "Send message"}
-                    </button>
-                  </div>
-
-                  {sendError && (
-                    <p
-                      className="status-message status-message--error"
-                      role="alert"
-                    >
-                      {sendError}
-                    </p>
-                  )}
-                </form>
-
                 return (
                   <li
                     className={
@@ -483,6 +428,61 @@ export function ConversationPage() {
               })}
             </ol>
           )}
+
+          <form
+            className="message-composer"
+            onSubmit={handleSubmit}
+          >
+            <label htmlFor="message-content">
+              Message
+            </label>
+
+            <textarea
+              id="message-content"
+              name="content"
+              rows={4}
+              maxLength={MESSAGE_MAX_LENGTH}
+              value={content}
+              disabled={isSending}
+              onChange={(event) => {
+                setContent(event.target.value);
+
+                if (sendError) {
+                  setSendError(null);
+                }
+              }}
+              placeholder="Write a message..."
+              required
+            />
+
+            <div className="message-composer__footer">
+              <span
+                className="message-character-count"
+                aria-live="polite"
+              >
+                {content.length} / {MESSAGE_MAX_LENGTH}
+              </span>
+
+              <button
+                className="button button--primary"
+                type="submit"
+                disabled={
+                  isSending || content.trim().length === 0
+                }
+              >
+                {isSending ? "Sending..." : "Send message"}
+              </button>
+            </div>
+
+            {sendError && (
+              <p
+                className="status-message status-message--error"
+                role="alert"
+              >
+                {sendError}
+              </p>
+            )}
+          </form>
         </>
       )}
     </section>
