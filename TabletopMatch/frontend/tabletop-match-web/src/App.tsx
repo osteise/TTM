@@ -27,12 +27,12 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/messages" element={<MessagesPage />} />
+          <Route
+            path="/messages/:conversationId"
+            element={<ConversationPage />}
+          />
         </Route>
 
-        <Route
-          path="/messages/:conversationId"
-          element={<ConversationPage />}
-        />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

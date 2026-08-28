@@ -1,3 +1,4 @@
+export const MESSAGE_MAX_LENGTH = 2000;
 export type ConversationType = "Direct" | "Group";
 
 export type ConversationParticipant = {

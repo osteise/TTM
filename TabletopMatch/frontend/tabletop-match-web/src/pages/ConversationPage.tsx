@@ -4,14 +4,17 @@ import { useAuth } from "../hooks/useAuth";
 import {
   getConversations,
   getMessages,
+  sendMessage,
 } from "../services/messagingService";
 import type {
   Conversation,
   ConversationMessage,
 } from "../types/Messaging";
+import type { FormEvent } from "react";
+import { MESSAGE_MAX_LENGTH } from "../types/Messaging";
 
 const guidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function formatMessageTime(value: string) {
   const date = new Date(value);
@@ -80,6 +83,12 @@ export function ConversationPage() {
     string | null
   >(null);
 
+  const [content, setContent] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(
+    null,
+  );
+
   useEffect(() => {
     if (!hasValidConversationId || !conversationId) {
       return;
@@ -108,7 +117,7 @@ export function ConversationPage() {
 
         if (conversation === null) {
           setRequestState({
-            conversationId,
+            conversationId: currentConversationId,
             conversation: null,
             messages: [],
             nextCursor: null,
@@ -121,7 +130,7 @@ export function ConversationPage() {
         }
 
         setRequestState({
-          conversationId,
+          conversationId: currentConversationId,
           conversation,
           messages: messagePage.items,
           nextCursor: messagePage.nextCursor,
@@ -135,7 +144,7 @@ export function ConversationPage() {
         }
 
         setRequestState({
-          conversationId,
+          conversationId: currentConversationId,
           conversation: null,
           messages: [],
           nextCursor: null,
@@ -233,6 +242,82 @@ export function ConversationPage() {
     }
   }
 
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    if (!conversationId || isSending) {
+      return;
+    }
+
+    const trimmedContent = content.trim();
+
+    if (trimmedContent.length === 0) {
+      setSendError("Message content is required.");
+      return;
+    }
+
+    if (trimmedContent.length > MESSAGE_MAX_LENGTH) {
+      setSendError(
+        `Message content cannot exceed ${MESSAGE_MAX_LENGTH} characters.`,
+      );
+      return;
+    }
+
+    setIsSending(true);
+    setSendError(null);
+
+    try {
+      const createdMessage = await sendMessage(
+        conversationId,
+        trimmedContent,
+      );
+
+      setRequestState((currentState) => {
+        if (
+          currentState.conversationId !== conversationId
+        ) {
+          return currentState;
+        }
+
+        const messageAlreadyExists =
+          currentState.messages.some(
+            (message) => message.id === createdMessage.id,
+          );
+
+        if (messageAlreadyExists) {
+          return currentState;
+        }
+
+        return {
+          ...currentState,
+          messages: [
+            ...currentState.messages,
+            createdMessage,
+          ],
+          conversation: currentState.conversation
+            ? {
+              ...currentState.conversation,
+              lastMessage: createdMessage,
+              lastActivityAt: createdMessage.sentAt,
+            }
+            : null,
+        };
+      });
+
+      setContent("");
+    } catch (requestError) {
+      setSendError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Failed to send the message.",
+      );
+    } finally {
+      setIsSending(false);
+    }
+  }
+
   return (
     <section className="conversation-page">
       <Link className="back-link" to="/messages">
@@ -313,6 +398,61 @@ export function ConversationPage() {
               {messages.map((message) => {
                 const isOwnMessage =
                   message.senderProfileId === user.profileId;
+
+                <form
+                  className="message-composer"
+                  onSubmit={handleSubmit}
+                >
+                  <label htmlFor="message-content">
+                    Message
+                  </label>
+
+                  <textarea
+                    id="message-content"
+                    name="content"
+                    rows={4}
+                    maxLength={MESSAGE_MAX_LENGTH}
+                    value={content}
+                    disabled={isSending}
+                    onChange={(event) => {
+                      setContent(event.target.value);
+
+                      if (sendError) {
+                        setSendError(null);
+                      }
+                    }}
+                    placeholder="Write a message..."
+                    required
+                  />
+
+                  <div className="message-composer__footer">
+                    <span
+                      className="message-character-count"
+                      aria-live="polite"
+                    >
+                      {content.length} / {MESSAGE_MAX_LENGTH}
+                    </span>
+
+                    <button
+                      className="button button--primary"
+                      type="submit"
+                      disabled={
+                        isSending || content.trim().length === 0
+                      }
+                    >
+                      {isSending ? "Sending..." : "Send message"}
+                    </button>
+                  </div>
+
+                  {sendError && (
+                    <p
+                      className="status-message status-message--error"
+                      role="alert"
+                    >
+                      {sendError}
+                    </p>
+                  )}
+                </form>
 
                 return (
                   <li
