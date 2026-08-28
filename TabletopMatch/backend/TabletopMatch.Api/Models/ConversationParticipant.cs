@@ -11,4 +11,6 @@ public class ConversationParticipant
     public Conversation Conversation { get; set; } = null!;
 
     public AppUser User { get; set; } = null!;
+
+    public long? LastReadMessageId { get; set; }
 }
