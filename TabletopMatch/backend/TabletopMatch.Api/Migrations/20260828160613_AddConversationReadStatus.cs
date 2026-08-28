@@ -20,6 +20,21 @@ namespace TabletopMatch.Api.Migrations
                 type: "bigint",
                 nullable: true);
 
+            migrationBuilder.Sql(
+                """
+                UPDATE "ConversationParticipants" AS participant
+                SET "LastReadMessageId" = latest."LastReadMessageId"
+                FROM (
+                    SELECT
+                        "ConversationId",
+                        MAX("Id") AS "LastReadMessageId"
+                    FROM "Messages"
+                    GROUP BY "ConversationId"
+                ) AS latest
+                WHERE participant."ConversationId" =
+                    latest."ConversationId";
+                """);
+
             migrationBuilder.AddUniqueConstraint(
                 name: "AK_Messages_ConversationId_Id",
                 table: "Messages",
