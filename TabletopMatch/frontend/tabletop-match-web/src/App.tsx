@@ -9,6 +9,7 @@ import { RegisterPage } from "./pages/RegisterPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlayerProfilePage } from "./pages/PlayerProfilePage";
 import { MessagesPage } from "./pages/MessagesPage";
+import { ConversationPage } from "./pages/ConversationPage";
 
 function App() {
   return (
@@ -27,6 +28,11 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/messages" element={<MessagesPage />} />
         </Route>
+
+        <Route
+          path="/messages/:conversationId"
+          element={<ConversationPage />}
+        />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

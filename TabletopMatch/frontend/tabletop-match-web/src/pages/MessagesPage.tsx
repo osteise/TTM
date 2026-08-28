@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getConversations } from "../services/messagingService";
 import type { Conversation } from "../types/Messaging";
+import { Link } from "react-router";
 
 function formatActivityTime(value: string) {
   const date = new Date(value);
@@ -135,7 +136,11 @@ export function MessagesPage() {
                   className="conversation-list__item"
                   key={conversation.id}
                 >
-                  <article className="conversation-summary">
+                  <Link
+                    className="conversation-summary"
+                    to={`/messages/${conversation.id}`}
+                    aria-label={`Open conversation with ${conversationName}`}
+                  >
                     <div
                       className="conversation-avatar"
                       aria-hidden="true"
@@ -167,7 +172,7 @@ export function MessagesPage() {
                         </p>
                       )}
                     </div>
-                  </article>
+                  </Link>
                 </li>
               );
             })}
