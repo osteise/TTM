@@ -24,9 +24,9 @@ public class MessagingService : IMessagingService
         _timeProvider = timeProvider;
     }
 
-    public async Task<StartDirectConversationResult?>
+    private async Task<StartDirectConversationResult?>
         GetOrCreateDirectConversationAsync(
-            string currentUserId,
+                string currentUserId,
             int participantProfileId,
             CancellationToken cancellationToken = default)
     {
@@ -143,12 +143,53 @@ public class MessagingService : IMessagingService
         };
     }
 
+    public async Task<MessageResponse?> SendDirectMessageAsync(
+    string currentUserId,
+    int participantProfileId,
+    string content,
+    CancellationToken cancellationToken = default)
+    {
+        var trimmedContent = ValidateMessageContent(content);
+
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                cancellationToken);
+
+        var conversationResult =
+            await GetOrCreateDirectConversationAsync(
+                currentUserId,
+                participantProfileId,
+                cancellationToken);
+
+        if (conversationResult is null)
+        {
+            return null;
+        }
+
+        var message = await SendMessageAsync(
+            currentUserId,
+            conversationResult.Conversation.Id,
+            trimmedContent,
+            cancellationToken);
+
+        if (message is null)
+        {
+            throw new InvalidOperationException(
+                "The direct conversation could not be loaded.");
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return message;
+    }
+
     public async Task<IReadOnlyList<ConversationResponse>>
         GetConversationsAsync(
             string currentUserId,
             CancellationToken cancellationToken = default)
     {
         var conversations = await CreateConversationQuery(currentUserId)
+            .Where(conversation => conversation.Messages.Any())
             .OrderByDescending(conversation =>
                 conversation.LastActivityAt)
             .ToListAsync(cancellationToken);
@@ -230,20 +271,8 @@ public class MessagingService : IMessagingService
         string content,
         CancellationToken cancellationToken = default)
     {
-        var trimmedContent = content?.Trim() ?? string.Empty;
 
-        if (string.IsNullOrWhiteSpace(trimmedContent))
-        {
-            throw new MessagingValidationException(
-                "Message content is required.");
-        }
-
-        if (trimmedContent.Length > Message.MaxContentLength)
-        {
-            throw new MessagingValidationException(
-                $"Message content cannot exceed " +
-                $"{Message.MaxContentLength} characters.");
-        }
+        var trimmedContent = ValidateMessageContent(content);
 
         var conversation = await _context.Conversations
             .SingleOrDefaultAsync(
@@ -405,6 +434,26 @@ public class MessagingService : IMessagingService
             SqlState: PostgresErrorCodes.UniqueViolation,
             ConstraintName: DirectConversationKeyIndexName
         };
+    }
+
+    private static string ValidateMessageContent(string? content)
+    {
+        var trimmedContent = content?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(trimmedContent))
+        {
+            throw new MessagingValidationException(
+                "Message content is required.");
+        }
+
+        if (trimmedContent.Length > Message.MaxContentLength)
+        {
+            throw new MessagingValidationException(
+                $"Message content cannot exceed " +
+                $"{Message.MaxContentLength} characters.");
+        }
+
+        return trimmedContent;
     }
 
     private static void ValidatePagination(
