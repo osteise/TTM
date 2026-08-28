@@ -24,9 +24,9 @@ public class MessagingService : IMessagingService
         _timeProvider = timeProvider;
     }
 
-    private async Task<StartDirectConversationResult?>
+    private async Task<ConversationResponse?>
         GetOrCreateDirectConversationAsync(
-                string currentUserId,
+            string currentUserId,
             int participantProfileId,
             CancellationToken cancellationToken = default)
     {
@@ -64,12 +64,7 @@ public class MessagingService : IMessagingService
 
         if (existingConversation is not null)
         {
-            return new StartDirectConversationResult
-            {
-                Conversation = CreateConversationResponse(
-                    existingConversation),
-                WasCreated = false
-            };
+            return CreateConversationResponse(existingConversation);
         }
 
         var utcNow = GetUtcNow();
@@ -117,12 +112,7 @@ public class MessagingService : IMessagingService
                 throw;
             }
 
-            return new StartDirectConversationResult
-            {
-                Conversation = CreateConversationResponse(
-                    existingConversation),
-                WasCreated = false
-            };
+            return CreateConversationResponse(existingConversation);
         }
 
         var createdConversation = await LoadConversationByKeyAsync(
@@ -136,11 +126,7 @@ public class MessagingService : IMessagingService
                 "The conversation could not be loaded after creation.");
         }
 
-        return new StartDirectConversationResult
-        {
-            Conversation = CreateConversationResponse(createdConversation),
-            WasCreated = true
-        };
+        return CreateConversationResponse(createdConversation);
     }
 
     public async Task<MessageResponse?> SendDirectMessageAsync(
@@ -155,20 +141,20 @@ public class MessagingService : IMessagingService
             await _context.Database.BeginTransactionAsync(
                 cancellationToken);
 
-        var conversationResult =
+        var conversation =
             await GetOrCreateDirectConversationAsync(
                 currentUserId,
                 participantProfileId,
                 cancellationToken);
 
-        if (conversationResult is null)
+        if (conversation is null)
         {
             return null;
         }
 
         var message = await SendMessageAsync(
             currentUserId,
-            conversationResult.Conversation.Id,
+            conversation.Id,
             trimmedContent,
             cancellationToken);
 
