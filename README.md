@@ -246,36 +246,39 @@ A player profile cannot be created directly. It is created automatically during 
 
 Direct messaging is implemented in the existing ASP.NET Core API. All messaging endpoints require cookie-based authentication.
 
-A direct conversation contains exactly two participants. When the same user pair starts another direct conversation, the existing conversation is returned instead of creating a duplicate.
+A direct conversation contains exactly two participants. The conversation and its first message are saved in the same database transaction, so an empty conversation is not created if sending the message fails.
+
+When the same user pair sends another direct message, the existing conversation is reused instead of creating a duplicate. Conversations without messages are not returned in the conversation list.
 
 | Method | Endpoint | Authentication | Description |
 |---|---|---|---|
-| `POST` | `/api/conversations/direct` | Required | Creates or returns a direct conversation |
-| `GET` | `/api/conversations` | Required | Returns the authenticated user's conversations |
+| `POST` | `/api/conversations/direct/messages` | Required | Creates or reuses a direct conversation and sends a message |
+| `GET` | `/api/conversations` | Required | Returns the authenticated user's non-empty conversations |
 | `GET` | `/api/conversations/{conversationId}/messages` | Required | Returns a paginated message history |
-| `POST` | `/api/conversations/{conversationId}/messages` | Required | Sends a message in a conversation |
+| `POST` | `/api/conversations/{conversationId}/messages` | Required | Sends a message in an existing conversation |
 
-Example request for starting a direct conversation:
+Example request for sending the first direct message:
 
 ```http
-POST /api/conversations/direct
+POST /api/conversations/direct/messages
 Content-Type: application/json
 
 {
-  "participantProfileId": 42
+  "participantProfileId": 42,
+  "content": "Would you like to play this weekend?"
 }
 ```
 
 The recipient is identified by their public player profile ID. Internal Identity user IDs and email addresses are not exposed by the messaging API.
 
-Example request for sending a message:
+Example request for sending another message in an existing conversation:
 
 ```http
 POST /api/conversations/2711af8a-857a-4fe0-bd4d-4b78843a8aca/messages
 Content-Type: application/json
 
 {
-  "content": "Would you like to play this weekend?"
+  "content": "How about Saturday afternoon?"
 }
 ```
 
@@ -339,5 +342,7 @@ Currently implemented:
 * Cursor-paginated message history
 * Validated messages with a 2,000-character limit
 * UTC timestamps and indexed messaging tables
+* Atomic creation of direct conversations with the first message
+* Conversation lists that exclude empty conversations
 
 The next development steps will focus on building the frontend inbox and conversation view, followed by further player discovery and matching functionality.

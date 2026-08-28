@@ -4,11 +4,11 @@ namespace TabletopMatch.Api.Services.Messaging;
 
 public interface IMessagingService
 {
-    Task<StartDirectConversationResult?>
-        GetOrCreateDirectConversationAsync(
-            string currentUserId,
-            int participantProfileId,
-            CancellationToken cancellationToken = default);
+    Task<MessageResponse?> SendDirectMessageAsync(
+        string currentUserId,
+        int participantProfileId,
+        string content,
+        CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ConversationResponse>> GetConversationsAsync(
         string currentUserId,
