@@ -30,10 +30,11 @@ export type PagedMessagesResponse = {
   hasMore: boolean;
 };
 
-export type StartDirectConversationRequest = {
-  participantProfileId: number;
+export type SendMessageRequest = {
+  content: string;
 };
 
-export type SendMessageRequest = {
+export type SendDirectMessageRequest = {
+  participantProfileId: number;
   content: string;
 };

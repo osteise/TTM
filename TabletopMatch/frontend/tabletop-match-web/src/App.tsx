@@ -10,6 +10,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlayerProfilePage } from "./pages/PlayerProfilePage";
 import { MessagesPage } from "./pages/MessagesPage";
 import { ConversationPage } from "./pages/ConversationPage";
+import { NewConversationPage } from "./pages/NewConversationPage";
 
 function App() {
   return (
@@ -27,6 +28,10 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/messages" element={<MessagesPage />} />
+          <Route
+            path="/messages/new/:profileId"
+            element={<NewConversationPage />}
+          />
           <Route
             path="/messages/:conversationId"
             element={<ConversationPage />}

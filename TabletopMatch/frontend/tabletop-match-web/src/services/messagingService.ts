@@ -2,8 +2,8 @@ import type {
   Conversation,
   ConversationMessage,
   PagedMessagesResponse,
+  SendDirectMessageRequest,
   SendMessageRequest,
-  StartDirectConversationRequest,
 } from "../types/Messaging";
 
 const MESSAGING_API_URL =
@@ -46,21 +46,26 @@ async function getErrorMessage(
   return "Something went wrong.";
 }
 
-export async function startDirectConversation(
+export async function sendDirectMessage(
   participantProfileId: number,
-): Promise<Conversation> {
-  const request: StartDirectConversationRequest = {
+  content: string,
+): Promise<ConversationMessage> {
+  const request: SendDirectMessageRequest = {
     participantProfileId,
+    content,
   };
 
-  const response = await fetch(`${MESSAGING_API_URL}/direct`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${MESSAGING_API_URL}/direct/messages`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
     },
-    body: JSON.stringify(request),
-  });
+  );
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response));
