@@ -259,6 +259,8 @@ When the same user pair sends another direct message, the existing conversation 
 | `GET` | `/api/conversations` | Required | Returns the authenticated user's non-empty conversations |
 | `GET` | `/api/conversations/{conversationId}/messages` | Required | Returns a paginated message history |
 | `POST` | `/api/conversations/{conversationId}/messages` | Required | Sends a message in an existing conversation |
+| `GET` | `/api/conversations/unread-count` | Required | Returns the authenticated user's total unread message count |
+| `PUT` | `/api/conversations/{conversationId}/read-status` | Required | Advances the authenticated user's read marker |
 
 Example request for sending the first direct message:
 
@@ -297,6 +299,23 @@ GET /api/conversations/{conversationId}/messages?beforeMessageId=120&pageSize=50
 `pageSize` defaults to 50 and must be between 1 and 100. `nextCursor` can be passed as `beforeMessageId` to retrieve the next page of older messages.
 
 Users can only read or send messages in conversations where they are participants.
+
+Message read status is stored per conversation participant in the database, so it persists across page reloads and different devices. Retrieving conversations or message history does not automatically change the read status.
+
+The client explicitly advances the read marker by providing the newest message that the user has read:
+
+```http
+PUT /api/conversations/2711af8a-857a-4fe0-bd4d-4b78843a8aca/read-status
+Content-Type: application/json
+
+{
+  "lastReadMessageId": 123
+}
+```
+
+The message must belong to the conversation, and the read marker can only move forward. Sending a message automatically advances the sender's read marker to the newly created message.
+
+Conversation responses include an unreadCount. The lightweight /api/conversations/unread-count endpoint returns the total unread count without returning the full inbox.
 
 ## Database Migrations
 
@@ -351,5 +370,9 @@ Currently implemented:
 * Protected routes for conversations and new-message drafts
 * First-message draft flow that avoids empty conversations
 * Client-side message validation and character counting
+* Persistent per-participant message read status
+* Forward-only read markers with conversation-level database constraints
+* Per-conversation and total unread message counts
+* Explicit read-status updates without side effects in GET requests
 
-The next development steps will focus on unread message indicators, followed by further player discovery and matching functionality.
+The next development steps will focus on adding unread message indicators to the frontend navigation and messaging views, followed by further player discovery and matching functionality.

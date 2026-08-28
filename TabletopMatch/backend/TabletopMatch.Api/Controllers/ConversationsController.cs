@@ -83,8 +83,8 @@ public class ConversationsController : ControllerBase
 
     [HttpGet("unread-count")]
     public async Task<ActionResult<UnreadMessagesCountResponse>>
-    GetUnreadMessagesCount(
-        CancellationToken cancellationToken)
+        GetUnreadMessagesCount(
+            CancellationToken cancellationToken)
     {
         var currentUserId = GetCurrentUserId();
 
