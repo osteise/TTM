@@ -152,7 +152,7 @@ public class MessagingService : IMessagingService
             return null;
         }
 
-        var message = await SendMessageAsync(
+        var message = await SendMessageCoreAsync(
             currentUserId,
             conversation.Id,
             trimmedContent,
@@ -282,11 +282,11 @@ public class MessagingService : IMessagingService
     }
 
     public async Task<ConversationReadStatusResponse?>
-    MarkConversationAsReadAsync(
-        string currentUserId,
-        Guid conversationId,
-        long lastReadMessageId,
-        CancellationToken cancellationToken = default)
+        MarkConversationAsReadAsync(
+            string currentUserId,
+            Guid conversationId,
+            long lastReadMessageId,
+            CancellationToken cancellationToken = default)
     {
         if (lastReadMessageId <= 0)
         {
@@ -321,18 +321,11 @@ public class MessagingService : IMessagingService
                 "The message does not belong to the conversation.");
         }
 
-        await _context.ConversationParticipants
-            .Where(participant =>
-                participant.ConversationId == conversationId &&
-                participant.UserId == currentUserId &&
-                (!participant.LastReadMessageId.HasValue ||
-                    participant.LastReadMessageId.Value <
-                    lastReadMessageId))
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(
-                    participant => participant.LastReadMessageId,
-                    (long?)lastReadMessageId),
-                cancellationToken);
+        await AdvanceReadMarkerAsync(
+            currentUserId,
+            conversationId,
+            lastReadMessageId,
+            cancellationToken);
 
         return await _context.ConversationParticipants
             .AsNoTracking()
@@ -356,15 +349,60 @@ public class MessagingService : IMessagingService
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    private Task<int> AdvanceReadMarkerAsync(
+        string currentUserId,
+        Guid conversationId,
+        long lastReadMessageId,
+        CancellationToken cancellationToken)
+    {
+        return _context.ConversationParticipants
+            .Where(participant =>
+                participant.ConversationId == conversationId &&
+                participant.UserId == currentUserId &&
+                (!participant.LastReadMessageId.HasValue ||
+                    participant.LastReadMessageId.Value <
+                    lastReadMessageId))
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    participant => participant.LastReadMessageId,
+                    (long?)lastReadMessageId),
+                cancellationToken);
+    }
+
     public async Task<MessageResponse?> SendMessageAsync(
         string currentUserId,
         Guid conversationId,
         string content,
         CancellationToken cancellationToken = default)
     {
-
         var trimmedContent = ValidateMessageContent(content);
 
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                cancellationToken);
+
+        var message = await SendMessageCoreAsync(
+            currentUserId,
+            conversationId,
+            trimmedContent,
+            cancellationToken);
+
+        if (message is null)
+        {
+            return null;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return message;
+    }
+
+    private async Task<MessageResponse?> SendMessageCoreAsync(
+        string currentUserId,
+        Guid conversationId,
+        string trimmedContent,
+        CancellationToken cancellationToken)
+    {
         var conversation = await _context.Conversations
             .SingleOrDefaultAsync(
                 item =>
@@ -404,6 +442,12 @@ public class MessagingService : IMessagingService
 
         _context.Messages.Add(message);
         await _context.SaveChangesAsync(cancellationToken);
+
+        await AdvanceReadMarkerAsync(
+            currentUserId,
+            conversationId,
+            message.Id,
+            cancellationToken);
 
         return new MessageResponse
         {
