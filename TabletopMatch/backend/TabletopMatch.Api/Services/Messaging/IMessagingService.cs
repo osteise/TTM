@@ -30,4 +30,11 @@ public interface IMessagingService
         Guid conversationId,
         string content,
         CancellationToken cancellationToken = default);
+
+    Task<ConversationReadStatusResponse?>
+        MarkConversationAsReadAsync(
+            string currentUserId,
+            Guid conversationId,
+            long lastReadMessageId,
+            CancellationToken cancellationToken = default);
 }

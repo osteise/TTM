@@ -201,9 +201,9 @@ public class MessagingService : IMessagingService
     }
 
     public async Task<UnreadMessagesCountResponse>
-    GetUnreadMessagesCountAsync(
-        string currentUserId,
-        CancellationToken cancellationToken = default)
+        GetUnreadMessagesCountAsync(
+            string currentUserId,
+            CancellationToken cancellationToken = default)
     {
         var unreadCount = await CreateUnreadMessagesQuery(
                 currentUserId)
@@ -281,6 +281,81 @@ public class MessagingService : IMessagingService
         };
     }
 
+    public async Task<ConversationReadStatusResponse?>
+    MarkConversationAsReadAsync(
+        string currentUserId,
+        Guid conversationId,
+        long lastReadMessageId,
+        CancellationToken cancellationToken = default)
+    {
+        if (lastReadMessageId <= 0)
+        {
+            throw new MessagingValidationException(
+                "The message ID must be greater than zero.");
+        }
+
+        var isParticipant = await _context.ConversationParticipants
+            .AsNoTracking()
+            .AnyAsync(
+                participant =>
+                    participant.ConversationId == conversationId &&
+                    participant.UserId == currentUserId,
+                cancellationToken);
+
+        if (!isParticipant)
+        {
+            return null;
+        }
+
+        var messageBelongsToConversation = await _context.Messages
+            .AsNoTracking()
+            .AnyAsync(
+                message =>
+                    message.ConversationId == conversationId &&
+                    message.Id == lastReadMessageId,
+                cancellationToken);
+
+        if (!messageBelongsToConversation)
+        {
+            throw new MessagingValidationException(
+                "The message does not belong to the conversation.");
+        }
+
+        await _context.ConversationParticipants
+            .Where(participant =>
+                participant.ConversationId == conversationId &&
+                participant.UserId == currentUserId &&
+                (!participant.LastReadMessageId.HasValue ||
+                    participant.LastReadMessageId.Value <
+                    lastReadMessageId))
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    participant => participant.LastReadMessageId,
+                    (long?)lastReadMessageId),
+                cancellationToken);
+
+        return await _context.ConversationParticipants
+            .AsNoTracking()
+            .Where(participant =>
+                participant.ConversationId == conversationId &&
+                participant.UserId == currentUserId)
+            .Select(participant =>
+                new ConversationReadStatusResponse
+                {
+                    ConversationId = participant.ConversationId,
+                    LastReadMessageId =
+                        participant.LastReadMessageId ??
+                        lastReadMessageId,
+                    UnreadCount =
+                        participant.Conversation.Messages.Count(message =>
+                            message.SenderId != currentUserId &&
+                            (!participant.LastReadMessageId.HasValue ||
+                                message.Id >
+                                participant.LastReadMessageId.Value))
+                })
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<MessageResponse?> SendMessageAsync(
         string currentUserId,
         Guid conversationId,
@@ -342,7 +417,7 @@ public class MessagingService : IMessagingService
     }
 
     private IQueryable<Message> CreateUnreadMessagesQuery(
-    string currentUserId)
+        string currentUserId)
     {
         return _context.Messages
             .AsNoTracking()
